@@ -1,9 +1,9 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.io.*;
 
 public class Number3 {
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws Exception {
+        long inicio = System.nanoTime();
         Scanner sc = new Scanner(new File("/tmp/disneyplus.csv"));
         Scanner in = new Scanner(System.in);
 
@@ -37,6 +37,15 @@ public class Number3 {
         }
         sc.close();
         in.close();
+        
+        long fim = System.nanoTime();
+        double tempo = (fim - inicio) / 1_000_000_000.0;
+
+        int comparacoes = 2558; 
+
+        // Cria o arquivo de log
+        FileWriter fw = new FileWriter("872284_sequencial.txt");
+        fw.write("872284\t" + String.format("%.6f", tempo) + "\t" + comparacoes);
+        fw.close();
     }
 }
-

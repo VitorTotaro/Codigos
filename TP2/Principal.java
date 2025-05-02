@@ -1,6 +1,5 @@
-import java.io.FileNotFoundException;
-import java.io.File;
 import java.util.*;
+import java.io.*;
 
 class Show {
     String show_id, type, title, director, country, duration;
@@ -156,8 +155,10 @@ class Show {
 }
 
 public class Principal {
+    
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws Exception {
+        
         Scanner sc = new Scanner(new File("/tmp/disneyplus.csv"));
         Scanner in = new Scanner(System.in);
 
@@ -169,16 +170,18 @@ public class Principal {
         }
         Show[] array = new Show[300];
         String entrada = in.nextLine();
+        int n = 0;
 
-        int i = 0;
+        
         while (!entrada.equals("FIM")) {
             int index = Integer.parseInt(entrada.substring(1)) - 1;
-            array[i] = shows[index];
-            i++;
+            array[n] = shows[index];
+            n++;
             entrada = in.nextLine();
         }
 
-        // ordenar
+        //ordenar 
+
 
         for (int j = 0; j < array.length; j++) {
             array[j].imprimir();
@@ -186,6 +189,16 @@ public class Principal {
 
         sc.close();
         in.close();
+    }
+
+    public static void escreverLog(double tempo, int comparacoes) {
+        try {
+            FileWriter writer = new FileWriter("872284_sequencial.txt");
+            writer.write("872284\t" + String.format(Locale.US, "%.3f", tempo) + "\t" + comparacoes + "\n");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever o arquivo de log.");
+        }
     }
 
 }
