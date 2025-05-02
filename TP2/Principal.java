@@ -120,7 +120,7 @@ class Show {
             show.cast1[0] = show.cast1[0].trim();
         }
 
-        // Processar data
+        // Processar a data
         if (show.date.equals("NaN")) {
             show.data = new Data(1900, 3, 1);
         } else {
