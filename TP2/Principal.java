@@ -2,7 +2,6 @@ import java.io.FileNotFoundException;
 import java.io.File;
 import java.util.*;
 
-
 class Show {
     String show_id, type, title, director, country, duration;
     String date;
@@ -16,6 +15,7 @@ class Show {
     public String gettitle() {
         return title;
     }
+
     public static class Data {
         int ano, mes, dia;
 
@@ -120,16 +120,18 @@ class Show {
             show.cast1[0] = show.cast1[0].trim();
         }
 
-        
         // Processar data
-        String[] partesData = show.date.trim().split("\\s+");
-        if (partesData.length == 3) {
-            int dia = Integer.parseInt(partesData[1].replace(",", ""));
-            int mes = tratarMes(partesData[0]);
-            int ano = Integer.parseInt(partesData[2]);
-            show.data = new Data(ano, mes, dia);
+        if (show.date.equals("NaN")) {
+            show.data = new Data(1900, 3, 1);
+        } else {
+            String[] partesData = show.date.trim().split("\\s+");
+            if (partesData.length == 3) {
+                int dia = Integer.parseInt(partesData[1].replace(",", ""));
+                int mes = tratarMes(partesData[0]);
+                int ano = Integer.parseInt(partesData[2]);
+                show.data = new Data(ano, mes, dia);
+            }
         }
-        
 
         show.release = Integer.parseInt(campos[7]);
         return show;
@@ -155,50 +157,6 @@ class Show {
 
 public class Principal {
 
-    public static void quicksort(Show[] array, int esq, int dir) {
-        int i = esq, j = dir;
-        Show.Data pivo = array[(esq + dir) / 2].data;
-        String tituloPivo = array[(esq + dir) / 2].title;
-
-        while (i <= j) {
-            while (
-                array[i].data.ano < pivo.ano ||
-                (array[i].data.ano == pivo.ano && array[i].data.mes < pivo.mes) ||
-                (array[i].data.ano == pivo.ano && array[i].data.mes == pivo.mes && array[i].data.dia < pivo.dia) ||
-                (array[i].data.ano == pivo.ano && array[i].data.mes == pivo.mes && array[i].data.dia == pivo.dia &&
-                 array[i].title.trim().compareToIgnoreCase(tituloPivo.trim()) < 0)
-            ) {
-                i++;
-            }
-    
-            while (
-                array[j].data.ano > pivo.ano ||
-                (array[j].data.ano == pivo.ano && array[j].data.mes > pivo.mes) ||
-                (array[j].data.ano == pivo.ano && array[j].data.mes == pivo.mes && array[j].data.dia > pivo.dia) ||
-                (array[j].data.ano == pivo.ano && array[j].data.mes == pivo.mes && array[j].data.dia == pivo.dia &&
-                 array[j].title.trim().compareToIgnoreCase(tituloPivo.trim()) > 0)
-            ) {
-                j--;
-            }
-    
-            if (i <= j) {
-                swap(array, i, j);
-                i++;
-                j--;
-            }
-        }
-
-        if (esq < j) quicksort(array, esq, j);
-        if (i < dir) quicksort(array, i, dir);
-    }
-
-    public static void swap(Show[] array, int i, int j) {
-        Show temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-    
-
     public static void main(String[] args) throws FileNotFoundException {
         Scanner sc = new Scanner(new File("/tmp/disneyplus.csv"));
         Scanner in = new Scanner(System.in);
@@ -220,14 +178,14 @@ public class Principal {
             entrada = in.nextLine();
         }
 
-       quicksort(array, 0, array.length-1);
+        // ordenar
 
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < array.length; j++) {
             array[j].imprimir();
         }
 
-        
         sc.close();
         in.close();
     }
+
 }
