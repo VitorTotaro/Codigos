@@ -169,7 +169,7 @@ int pesquisaBinaria(Show* vet, int n, char* chave) {
     int esq = 0, dir = n - 1;
 
     while (esq <= dir) {
-        int meio = (esq + dir) / 2;
+        int meio = (dir - esq) / 2; 
         comparacoes++;
         int cmp = strcasecmp(vet[meio].title, chave);
         if (cmp == 0) return meio;
@@ -215,6 +215,8 @@ int main() {
     
     // Início do tempo
     clock_t inicio = clock();
+
+    printf("NAO\n");
 
     // Segunda entrada: títulos para pesquisar
     while (1) {
