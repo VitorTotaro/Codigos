@@ -214,7 +214,7 @@ int pesquisaBinaria(Show *vet, int n, char *chave)
 
     while (esq <= dir)
     {
-        int meio = (dir - esq) / 2;
+        int meio = esq + (dir - esq) / 2;
         comparacoes++;
         int cmp = strcasecmp(vet[meio].title, chave);
         if (cmp == 0)
