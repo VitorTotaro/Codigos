@@ -155,6 +155,9 @@ class Show {
 }
 
 public class Principal {
+    public static int comparacoes = 0;
+
+    
     
 
     public static void main(String[] args) throws Exception {
@@ -180,12 +183,17 @@ public class Principal {
             entrada = in.nextLine();
         }
 
-        //ordenar 
+        long inicio = System.nanoTime();
+        //quicksort(array, 0, n-1);
+        long fim = System.nanoTime();
 
+        double tempoMs = (fim - inicio) / 1_000_000.0;
 
         for (int j = 0; j < array.length; j++) {
             array[j].imprimir();
         }
+
+        escreverLog(tempoMs, comparacoes);
 
         sc.close();
         in.close();
@@ -193,7 +201,7 @@ public class Principal {
 
     public static void escreverLog(double tempo, int comparacoes) {
         try {
-            FileWriter writer = new FileWriter("872284_sequencial.txt");
+            FileWriter writer = new FileWriter("872284_log.txt");
             writer.write("872284\t" + String.format(Locale.US, "%.3f", tempo) + "\t" + comparacoes + "\n");
             writer.close();
         } catch (IOException e) {
