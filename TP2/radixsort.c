@@ -311,6 +311,5 @@ int main(){
         for (int i = 0; i < n; i++) {
             imprimirShow(selecionados[i]);
         }
-    
         return 0;
     }

@@ -87,6 +87,7 @@ public class Number13 {
         sc.close();
         in.close();
     }
+    
 
     public static void escreverLog(double tempo, int comparacoes) {
         try {

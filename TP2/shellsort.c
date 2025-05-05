@@ -279,6 +279,5 @@ int main()
     {
         imprimirShow(selecionados[i]);
     }
-
     return 0;
 }

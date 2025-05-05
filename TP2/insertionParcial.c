@@ -245,6 +245,5 @@ int main(){
         for (int i = 0; i < 10; i++) {
             imprimirShow(selecionados[i]);
         }
-    
         return 0;
     }
