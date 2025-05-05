@@ -192,93 +192,59 @@ Show lerLinha(char *linha)
     return s;
 }
 
-void insercaoPorCor(Show *array, int n, int cor, int h){
-    for (int i = (h + cor); i < n; i+=h) {
-        Show tmp = array[i];
-        int j = i - h;
-        while (
-            (j >= 0) && (
-                (strcmp(array[j].type, tmp.type) > 0) ||
-                (strcmp(array[j].type, tmp.type) == 0 && strcmp(array[j].title, tmp.title) > 0)
-            )
-        ){
-            comparacoes++;
-            array[j + h] = array[j];
-            j-=h;
+    void insertion(Show *array, int n,int k){
+        for (int i = 1; i < n; i++) {
+            Show ordenado = array[i];
+           
+            int j = (i <= k) ? i - 1 : k; // Só ordena até a posição k
+
+            while ((j >= 0) && (strcmp(array[j].type, ordenado.type) > 0 || 
+                  (strcmp(array[j].type, ordenado.type) == 0 && strcmp(array[j].title, ordenado.title) > 0 ))) {
+               array[j + 1] = array[j];
+               j--;
+            }
+            array[j+1] = ordenado;
+         }
+    }
+
+int main(){
+        FILE* arq = fopen("/tmp/disneyplus.csv", "r");
+        if (!arq) {
+            printf("Erro ao abrir arquivo.\n");
+            return 1;
         }
-        array[j + h] = tmp;
-    }
-}
-
-void shellsort(Show *array, int n)
-{
-    int h = 1;
-
-    do{ h = (h * 3) + 1; } while (h < n);
-
-    do{
-        h /= 3;
-        for (int cor = 0; cor < h; cor++){
-            insercaoPorCor(array, n, cor, h);
-        }
-    } while (h != 1);
-}
-
-int main()
-{
-    FILE *arq = fopen("/tmp/disneyplus.csv", "r");
-    if (!arq)
-    {
-        printf("Erro ao abrir arquivo.\n");
-        return 1;
-    }
-
-    Show todos[MAX_SHOWS];
-    char linha[MAX_LINE];
-    int count = 0;
-    fgets(linha, MAX_LINE, arq); // pula cabeçalho
-
-    while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS)
-    {
-        linha[strcspn(linha, "\n")] = '\0';
-        todos[count++] = lerLinha(linha);
-    }
-
-    fclose(arq);
-
-    // Entrada do usuário
-    Show selecionados[MAX_INPUT];
-    int n = 0;
-    char entrada[10];
-    while (1)
-    {
-        fgets(entrada, sizeof(entrada), stdin);
-        entrada[strcspn(entrada, "\n")] = '\0';
-        if (strcmp(entrada, "FIM") == 0)
-            break;
-        int idx = atoi(entrada + 1) - 1;
-        selecionados[n++] = todos[idx];
-    }
-
     
-    clock_t inicio = clock();
-    shellsort(selecionados, n);
-    clock_t fim = clock();
+        Show todos[MAX_SHOWS];
+        char linha[MAX_LINE];
+        int count = 0;
+        fgets(linha, MAX_LINE, arq); // pula cabeçalho
+    
+        while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS) {
+            linha[strcspn(linha, "\n")] = '\0';
+            todos[count++] = lerLinha(linha);
+        }
+    
+        fclose(arq);
+    
+        // Entrada do usuário
+        Show selecionados[MAX_INPUT];
+        int n = 0;
+        char entrada[10];
+        while (1) {
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strcmp(entrada, "FIM") == 0) break;
+            int idx = atoi(entrada + 1) - 1;
+            selecionados[n++] = todos[idx];
+        }
+    
+       
+        
+        insertion(selecionados, n, 10);
 
-    double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-
-    FILE *log = fopen("872284_shellsort.txt", "w");
-    if (log != NULL)
-    {
-        fprintf(log, "Matricula: 872284\t");
-        fprintf(log, "Tempo: %.6lf s\t", tempo);
-        fprintf(log, "Comparacoes: %d\n", comparacoes);
-        fclose(log);
+        for (int i = 0; i < 10; i++) {
+            imprimirShow(selecionados[i]);
+        }
+    
+        return 0;
     }
-    for (int i = 0; i < n; i++)
-    {
-        imprimirShow(selecionados[i]);
-    }
-
-    return 0;
-}

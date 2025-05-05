@@ -9,6 +9,8 @@ int comparacoes = 0; // contador global de comparações
 #define MAX_SHOWS 1368
 #define MAX_INPUT 300
 #define MAX_LINE 1000
+#define MAX 10000
+#define BASE 10
 
 typedef struct
 {
@@ -192,93 +194,123 @@ Show lerLinha(char *linha)
     return s;
 }
 
-void insercaoPorCor(Show *array, int n, int cor, int h){
-    for (int i = (h + cor); i < n; i+=h) {
-        Show tmp = array[i];
-        int j = i - h;
-        while (
-            (j >= 0) && (
-                (strcmp(array[j].type, tmp.type) > 0) ||
-                (strcmp(array[j].type, tmp.type) == 0 && strcmp(array[j].title, tmp.title) > 0)
-            )
-        ){
-            comparacoes++;
-            array[j + h] = array[j];
-            j-=h;
-        }
-        array[j + h] = tmp;
-    }
+void swap(Show* a, Show* b){
+    Show temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-void shellsort(Show *array, int n)
-{
-    int h = 1;
-
-    do{ h = (h * 3) + 1; } while (h < n);
-
-    do{
-        h /= 3;
-        for (int cor = 0; cor < h; cor++){
-            insercaoPorCor(array, n, cor, h);
-        }
-    } while (h != 1);
+int comparar_title(const char *a, const char *b) {
+    comparacoes++;
+    return strcmp(a, b);
 }
 
-int main()
-{
-    FILE *arq = fopen("/tmp/disneyplus.csv", "r");
-    if (!arq)
-    {
-        printf("Erro ao abrir arquivo.\n");
-        return 1;
+int getMaxRelease(Show *array, int n) {
+    int max = array[0].release;
+    for (int i = 1; i < n; i++) {
+        if (array[i].release > max)
+            max = array[i].release;
+    }
+    return max;
+}
+
+void countingSort(Show *array, int n, int exp) {
+    Show *output = (Show *)malloc(n * sizeof(Show));
+    int count[BASE] = {0};
+
+    for (int i = 0; i < n; i++) {
+        int index = (array[i].release / exp) % 10;
+        count[index]++;
     }
 
-    Show todos[MAX_SHOWS];
-    char linha[MAX_LINE];
-    int count = 0;
-    fgets(linha, MAX_LINE, arq); // pula cabeçalho
-
-    while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS)
-    {
-        linha[strcspn(linha, "\n")] = '\0';
-        todos[count++] = lerLinha(linha);
+    for (int i = 1; i < BASE; i++) {
+        count[i] += count[i - 1];
     }
 
-    fclose(arq);
-
-    // Entrada do usuário
-    Show selecionados[MAX_INPUT];
-    int n = 0;
-    char entrada[10];
-    while (1)
-    {
-        fgets(entrada, sizeof(entrada), stdin);
-        entrada[strcspn(entrada, "\n")] = '\0';
-        if (strcmp(entrada, "FIM") == 0)
-            break;
-        int idx = atoi(entrada + 1) - 1;
-        selecionados[n++] = todos[idx];
+    for (int i = n - 1; i >= 0; i--) {
+        int index = (array[i].release / exp) % 10;
+        output[--count[index]] = array[i];
     }
 
+    // Desempate: ordenar os elementos com mesmo release por title (estáveis)
+    for (int i = 0; i < n;) {
+        int j = i + 1;
+        while (j < n && output[j].release == output[i].release) j++;
+
+        for (int x = i; x < j; x++) {
+            for (int y = x + 1; y < j; y++) {
+                if (comparar_title(output[x].title, output[y].title) > 0) {
+                    Show tmp = output[x];
+                    output[x] = output[y];
+                    output[y] = tmp;
+                }
+            }
+        }
+        i = j;
+    }
+
+    for (int i = 0; i < n; i++) {
+        array[i] = output[i];
+    }
+
+    free(output);
+}
+
+void radixsort(Show *array, int n) {
+    int max = getMaxRelease(array, n);
+
+    for (int exp = 1; max / exp > 0; exp *= 10) {
+        countingSort(array, n, exp);
+    }
+}
+int main(){
+        FILE* arq = fopen("/tmp/disneyplus.csv", "r");
+        if (!arq) {
+            printf("Erro ao abrir arquivo.\n");
+            return 1;
+        }
     
-    clock_t inicio = clock();
-    shellsort(selecionados, n);
-    clock_t fim = clock();
-
-    double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-
-    FILE *log = fopen("872284_shellsort.txt", "w");
-    if (log != NULL)
-    {
-        fprintf(log, "Matricula: 872284\t");
-        fprintf(log, "Tempo: %.6lf s\t", tempo);
-        fprintf(log, "Comparacoes: %d\n", comparacoes);
-        fclose(log);
+        Show todos[MAX_SHOWS];
+        char linha[MAX_LINE];
+        int count = 0;
+        fgets(linha, MAX_LINE, arq); // pula cabeçalho
+    
+        while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS) {
+            linha[strcspn(linha, "\n")] = '\0';
+            todos[count++] = lerLinha(linha);
+        }
+    
+        fclose(arq);
+    
+        // Entrada do usuário
+        Show selecionados[MAX_INPUT];
+        int n = 0;
+        char entrada[10];
+        while (1) {
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strcmp(entrada, "FIM") == 0) break;
+            int idx = atoi(entrada + 1) - 1;
+            selecionados[n++] = todos[idx];
+        }
+    
+        
+        clock_t inicio = clock();
+        radixsort(selecionados, n);
+        clock_t fim = clock();
+    
+        double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
+    
+        FILE *log = fopen("872284_radixsort.txt", "w");
+        if (log != NULL) {
+            fprintf(log, "Matricula: 872284\t");
+            fprintf(log, "Tempo: %.6lf s\t", tempo);
+            fprintf(log, "Comparacoes: %d\n", comparacoes);
+            fclose(log);
+        }
+        for (int i = 0; i < n; i++) {
+            imprimirShow(selecionados[i]);
+        }
+    
+        return 0;
     }
-    for (int i = 0; i < n; i++)
-    {
-        imprimirShow(selecionados[i]);
-    }
-
-    return 0;
-}

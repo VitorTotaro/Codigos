@@ -1,8 +1,11 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.*;
+import java.io.*;
 
 public class Number13 {
+    public static int comparacoes = 0;
+
     public static void mergesort(Show[] array, int esq, int dir){
         if (esq < dir){
             int meio = (esq + dir) / 2;
@@ -12,7 +15,7 @@ public class Number13 {
          }
       }
 
-      public static void intercalar(Show[] array, int esq, int meio, int dir) {
+    public static void intercalar(Show[] array, int esq, int meio, int dir) {
         int n1 = meio - esq + 1;
         int n2 = dir - meio;
 
@@ -29,11 +32,11 @@ public class Number13 {
         int i = 0, j = 0, k = esq;
         for (i = j = 0, k = esq; k <= dir; k++) {
             if (i < n1 && j < n2) {
-                int dur1 = Integer.parseInt(a1[i].duration.replaceAll("[^0-9]", ""));
-                int dur2 = Integer.parseInt(a2[j].duration.replaceAll("[^0-9]", ""));
+                String dur1 = a1[i].duration.replaceAll("[^0-9]", "");
+                String dur2 = a2[j].duration.replaceAll("[^0-9]", "");
         
-                if (dur1 < dur2 || 
-                   (dur1 == dur2 && a1[i].title.compareToIgnoreCase(a2[j].title) <= 0)) {
+                if ((dur1.compareToIgnoreCase(dur2) < 0) || 
+                   (dur1.compareToIgnoreCase(dur2) == 0 && a1[i].title.compareToIgnoreCase(a2[j].title) <= 0)) {
                     array[k] = a1[i++];
                 } else {
                     array[k] = a2[j++];
@@ -45,11 +48,9 @@ public class Number13 {
             }
         }
     }
-        
-    
-    
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws Exception {
+        
         Scanner sc = new Scanner(new File("/tmp/disneyplus.csv"));
         Scanner in = new Scanner(System.in);
 
@@ -61,22 +62,39 @@ public class Number13 {
         }
         Show[] array = new Show[300];
         String entrada = in.nextLine();
+        int n = 0;
 
-        int i = 0;
+        
         while (!entrada.equals("FIM")) {
             int index = Integer.parseInt(entrada.substring(1)) - 1;
-            array[i] = shows[index];
-            i++;
+            array[n] = shows[index];
+            n++;
             entrada = in.nextLine();
         }
-        
-        mergesort(array, 0, i-1);
+
+        long inicio = System.nanoTime();
+        mergesort(array, 0, n-1);
+        long fim = System.nanoTime();
+
+        double tempoMs = (fim - inicio) / 1_000_000.0;
 
         for (int j = 0; j < array.length; j++) {
             array[j].imprimir();
         }
 
+        escreverLog(tempoMs, comparacoes);
+
         sc.close();
         in.close();
+    }
+
+    public static void escreverLog(double tempo, int comparacoes) {
+        try {
+            FileWriter writer = new FileWriter("872284_mergesort.txt");
+            writer.write("872284\t" + String.format(Locale.US, "%.3f", tempo) + "\t" + comparacoes + "\n");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever o arquivo de log.");
+        }
     }
 }

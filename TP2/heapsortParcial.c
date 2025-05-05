@@ -192,93 +192,109 @@ Show lerLinha(char *linha)
     return s;
 }
 
-void insercaoPorCor(Show *array, int n, int cor, int h){
-    for (int i = (h + cor); i < n; i+=h) {
-        Show tmp = array[i];
-        int j = i - h;
-        while (
-            (j >= 0) && (
-                (strcmp(array[j].type, tmp.type) > 0) ||
-                (strcmp(array[j].type, tmp.type) == 0 && strcmp(array[j].title, tmp.title) > 0)
-            )
-        ){
-            comparacoes++;
-            array[j + h] = array[j];
-            j-=h;
-        }
-        array[j + h] = tmp;
+int comparar(Show a, Show b) {
+    comparacoes++;
+    int cmp = strcmp(a.director, b.director);
+    if (cmp != 0) return cmp;
+    return strcmp(a.title, b.title);
+}
+
+void swap(Show *a, Show *b) {
+    Show temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void heapify(Show *array, int n, int i) {
+    int maior = i;
+    int esq = 2 * i + 1;
+    int dir = 2 * i + 2;
+
+    if (esq < n && comparar(array[esq], array[maior]) > 0)
+        maior = esq;
+    if (dir < n && comparar(array[dir], array[maior]) > 0)
+        maior = dir;
+
+    if (maior != i) {
+        swap(&array[i], &array[maior]);
+        heapify(array, n, maior);
     }
 }
 
-void shellsort(Show *array, int n)
-{
-    int h = 1;
-
-    do{ h = (h * 3) + 1; } while (h < n);
-
-    do{
-        h /= 3;
-        for (int cor = 0; cor < h; cor++){
-            insercaoPorCor(array, n, cor, h);
-        }
-    } while (h != 1);
+void construirHeap(Show *heap, int n) {
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(heap, n, i);
 }
 
-int main()
-{
-    FILE *arq = fopen("/tmp/disneyplus.csv", "r");
-    if (!arq)
-    {
-        printf("Erro ao abrir arquivo.\n");
-        return 1;
+void heapsort(Show *array, int n) {
+    int k = 10;
+    Show heap[10];
+
+    //Copia os 10 primeiros para o heap
+    for (int i = 0; i < k; i++) {
+        heap[i] = array[i];
     }
 
-    Show todos[MAX_SHOWS];
-    char linha[MAX_LINE];
-    int count = 0;
-    fgets(linha, MAX_LINE, arq); // pula cabeçalho
+    construirHeap(heap, k);
 
-    while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS)
-    {
-        linha[strcspn(linha, "\n")] = '\0';
-        todos[count++] = lerLinha(linha);
+    //Varre o resto do vetor
+    for (int i = k; i < n; i++) {
+        if (comparar(array[i], heap[0]) < 0) {
+            heap[0] = array[i];
+            heapify(heap, k, 0);
+        }
     }
 
-    fclose(arq);
-
-    // Entrada do usuário
-    Show selecionados[MAX_INPUT];
-    int n = 0;
-    char entrada[10];
-    while (1)
-    {
-        fgets(entrada, sizeof(entrada), stdin);
-        entrada[strcspn(entrada, "\n")] = '\0';
-        if (strcmp(entrada, "FIM") == 0)
-            break;
-        int idx = atoi(entrada + 1) - 1;
-        selecionados[n++] = todos[idx];
+    //ordena os 10 menores elementos no heap
+    for (int i = k - 1; i > 0; i--) {
+        swap(&heap[0], &heap[i]);
+        heapify(heap, i, 0);
     }
 
+    //Copia os 10 menores ordenados de volta para o início do vetor
+    for (int i = 0; i < k; i++) {
+        array[i] = heap[i];
+    }
+}
+
+
+int main(){
+        FILE* arq = fopen("/tmp/disneyplus.csv", "r");
+        if (!arq) {
+            printf("Erro ao abrir arquivo.\n");
+            return 1;
+        }
     
-    clock_t inicio = clock();
-    shellsort(selecionados, n);
-    clock_t fim = clock();
-
-    double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-
-    FILE *log = fopen("872284_shellsort.txt", "w");
-    if (log != NULL)
-    {
-        fprintf(log, "Matricula: 872284\t");
-        fprintf(log, "Tempo: %.6lf s\t", tempo);
-        fprintf(log, "Comparacoes: %d\n", comparacoes);
-        fclose(log);
+        Show todos[MAX_SHOWS];
+        char linha[MAX_LINE];
+        int count = 0;
+        fgets(linha, MAX_LINE, arq); // pula cabeçalho
+    
+        while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS) {
+            linha[strcspn(linha, "\n")] = '\0';
+            todos[count++] = lerLinha(linha);
+        }
+    
+        fclose(arq);
+    
+        // Entrada do usuário
+        Show selecionados[MAX_INPUT];
+        int n = 0;
+        char entrada[10];
+        while (1) {
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strcmp(entrada, "FIM") == 0) break;
+            int idx = atoi(entrada + 1) - 1;
+            selecionados[n++] = todos[idx];
+        }
+    
+       
+        heapsort(selecionados, n);
+    
+        for (int i = 0; i < 10; i++) {
+            imprimirShow(selecionados[i]);
+        }
+    
+        return 0;
     }
-    for (int i = 0; i < n; i++)
-    {
-        imprimirShow(selecionados[i]);
-    }
-
-    return 0;
-}

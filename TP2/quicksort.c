@@ -192,93 +192,99 @@ Show lerLinha(char *linha)
     return s;
 }
 
-void insercaoPorCor(Show *array, int n, int cor, int h){
-    for (int i = (h + cor); i < n; i+=h) {
-        Show tmp = array[i];
-        int j = i - h;
+void swap(Show* a, Show* b){
+    Show temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void quicksort(Show *array, int esq, int dir) {
+    int i = esq, j = dir;
+    Data pivo = array[(esq + dir) / 2].data;
+    char tituloPivo[150];
+    strcpy(tituloPivo, array[(esq + dir) / 2].title);
+
+    while (i <= j) {
         while (
-            (j >= 0) && (
-                (strcmp(array[j].type, tmp.type) > 0) ||
-                (strcmp(array[j].type, tmp.type) == 0 && strcmp(array[j].title, tmp.title) > 0)
-            )
+            array[i].data.ano < pivo.ano ||
+            (array[i].data.ano == pivo.ano && array[i].data.mes < pivo.mes) ||
+            (array[i].data.ano == pivo.ano && array[i].data.mes == pivo.mes && array[i].data.dia < pivo.dia) ||
+            (array[i].data.ano == pivo.ano && array[i].data.mes == pivo.mes && array[i].data.dia == pivo.dia &&
+            strcmp(array[i].title, tituloPivo) < 0)
         ){
+            i++;
+            comparacoes++;;
+        }
+
+        while (
+            array[j].data.ano > pivo.ano ||
+            (array[j].data.ano == pivo.ano && array[j].data.mes > pivo.mes) ||
+            (array[j].data.ano == pivo.ano && array[j].data.mes == pivo.mes && array[j].data.dia > pivo.dia) ||
+            (array[j].data.ano == pivo.ano && array[j].data.mes == pivo.mes && array[j].data.dia == pivo.dia &&
+            strcmp(array[j].title, tituloPivo) > 0) 
+        ){
+            j--;
             comparacoes++;
-            array[j + h] = array[j];
-            j-=h;
         }
-        array[j + h] = tmp;
-    }
-}
 
-void shellsort(Show *array, int n)
-{
-    int h = 1;
-
-    do{ h = (h * 3) + 1; } while (h < n);
-
-    do{
-        h /= 3;
-        for (int cor = 0; cor < h; cor++){
-            insercaoPorCor(array, n, cor, h);
+        if (i <= j) {
+            swap(&array[i], &array[j]);
+            i++;
+            j--;
         }
-    } while (h != 1);
+    }
+
+    if (esq < j) quicksort(array, esq, j);
+    if (i < dir) quicksort(array, i, dir);
 }
-
-int main()
-{
-    FILE *arq = fopen("/tmp/disneyplus.csv", "r");
-    if (!arq)
-    {
-        printf("Erro ao abrir arquivo.\n");
-        return 1;
-    }
-
-    Show todos[MAX_SHOWS];
-    char linha[MAX_LINE];
-    int count = 0;
-    fgets(linha, MAX_LINE, arq); // pula cabeçalho
-
-    while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS)
-    {
-        linha[strcspn(linha, "\n")] = '\0';
-        todos[count++] = lerLinha(linha);
-    }
-
-    fclose(arq);
-
-    // Entrada do usuário
-    Show selecionados[MAX_INPUT];
-    int n = 0;
-    char entrada[10];
-    while (1)
-    {
-        fgets(entrada, sizeof(entrada), stdin);
-        entrada[strcspn(entrada, "\n")] = '\0';
-        if (strcmp(entrada, "FIM") == 0)
-            break;
-        int idx = atoi(entrada + 1) - 1;
-        selecionados[n++] = todos[idx];
-    }
-
+int main(){
+        FILE* arq = fopen("/tmp/disneyplus.csv", "r");
+        if (!arq) {
+            printf("Erro ao abrir arquivo.\n");
+            return 1;
+        }
     
-    clock_t inicio = clock();
-    shellsort(selecionados, n);
-    clock_t fim = clock();
-
-    double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-
-    FILE *log = fopen("872284_shellsort.txt", "w");
-    if (log != NULL)
-    {
-        fprintf(log, "Matricula: 872284\t");
-        fprintf(log, "Tempo: %.6lf s\t", tempo);
-        fprintf(log, "Comparacoes: %d\n", comparacoes);
-        fclose(log);
+        Show todos[MAX_SHOWS];
+        char linha[MAX_LINE];
+        int count = 0;
+        fgets(linha, MAX_LINE, arq); // pula cabeçalho
+    
+        while (fgets(linha, MAX_LINE, arq) && count < MAX_SHOWS) {
+            linha[strcspn(linha, "\n")] = '\0';
+            todos[count++] = lerLinha(linha);
+        }
+    
+        fclose(arq);
+    
+        // Entrada do usuário
+        Show selecionados[MAX_INPUT];
+        int n = 0;
+        char entrada[10];
+        while (1) {
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strcmp(entrada, "FIM") == 0) break;
+            int idx = atoi(entrada + 1) - 1;
+            selecionados[n++] = todos[idx];
+        }
+    
+        
+        clock_t inicio = clock();
+        quicksort(selecionados, 0, n-1);
+        clock_t fim = clock();
+    
+        double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
+    
+        FILE *log = fopen("872284_quicsort.txt", "w");
+        if (log != NULL) {
+            fprintf(log, "Matricula: 872284\t");
+            fprintf(log, "Tempo: %.6lf s\t", tempo);
+            fprintf(log, "Comparacoes: %d\n", comparacoes);
+            fclose(log);
+        }
+        for (int i = 0; i < n; i++) {
+            imprimirShow(selecionados[i]);
+        }
+    
+        return 0;
     }
-    for (int i = 0; i < n; i++)
-    {
-        imprimirShow(selecionados[i]);
-    }
-
-    return 0;
-}
