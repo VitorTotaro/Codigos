@@ -110,9 +110,6 @@ class Lista {
                 array[i].country, array[i].date, array[i].release_year, array[i].rating, array[i].duration, array[i].listed_in);
         }
     }
-
-
-
 }
 
 
